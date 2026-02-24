@@ -85,6 +85,27 @@
         }
         .btn-icon:hover { background: rgba(255,255,255,0.3); }
 
+        .mode-toggle {
+            display: flex;
+            align-items: center;
+            background: rgba(0,0,0,0.1);
+            border-radius: 20px;
+            padding: 2px;
+            cursor: pointer;
+        }
+        .mode-toggle span {
+            padding: 0.2rem 0.6rem;
+            border-radius: 18px;
+            font-size: 0.9rem;
+            transition: all 0.2s;
+        }
+        .mode-toggle span.active {
+            background: white;
+            color: var(--primary-color);
+            font-weight: bold;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        }
+
         main {
             flex: 1;
             padding: 2rem;
@@ -276,6 +297,10 @@
             <span data-i18n="appTitle">Concierge MIKI</span>
         </div>
         <div class="header-controls">
+            <div class="mode-toggle" onclick="toggleDeviceMode()" title="PC/Mobile Mode Switch">
+                <span id="mode-pc" class="active">💻</span>
+                <span id="mode-mobile">📱</span>
+            </div>
             <span class="badge">XP: <span id="user-xp">0</span></span>
             <button class="btn-icon" onclick="toggleLanguage()" id="lang-btn">EN</button>
         </div>
@@ -450,6 +475,7 @@
         // State
         let state = {
             lang: 'ja',
+            deviceMode: 'auto', // 'pc' or 'mobile'
             difficulty: 'beginner',
             xp: 0,
             loginDays: 0,
@@ -493,6 +519,7 @@
                 simFocusMsg: "ここをクリックして、キーボードを入力してください",
                 simInput: "入力: ",
                 simWait: "キー入力を待機中...",
+                mobileModeMsg: "📱スマホモード：正しいキーボード操作を選択してください",
                 correct: "正解です！",
                 wrong: "惜しい！もう一度確認してみましょう。",
                 titles: {
@@ -537,6 +564,7 @@
                 simFocusMsg: "Click here and type your keyboard shortcut",
                 simInput: "Input: ",
                 simWait: "Waiting for keyboard input...",
+                mobileModeMsg: "📱Mobile Mode: Select the correct shortcut",
                 correct: "Correct!",
                 wrong: "Close! Let's check the hint and try again.",
                 titles: {
@@ -566,27 +594,32 @@
             { id: "b1", diff: "beginner", type: "simulation", 
               scenario: { ja: "お客様情報を別の欄に転記したいです。", en: "Need to copy guest info to another field." },
               instruction: { ja: "選択したテキストを「コピー」してください。", en: "Copy the selected text." },
-              targetKeys: ["CTRL", "C"], hint: { ja: "Controlキーを押しながら C を押します。", en: "Hold Control and press C." }
+              targetKeys: ["CTRL", "C"], hint: { ja: "Controlキーを押しながら C を押します。", en: "Hold Control and press C." },
+              mobileOptions: [{k: "Ctrl + C", c: true}, {k: "Ctrl + V", c: false}, {k: "Alt + C", c: false}, {k: "Shift + C", c: false}]
             },
             { id: "b2", diff: "beginner", type: "simulation", 
               scenario: { ja: "先ほどコピーした情報を入力欄に入れたいです。", en: "Need to paste the copied info." },
               instruction: { ja: "コピーしたテキストを「貼り付け」してください。", en: "Paste the text." },
-              targetKeys: ["CTRL", "V"], hint: { ja: "Controlキーを押しながら V を押します。", en: "Hold Control and press V." }
+              targetKeys: ["CTRL", "V"], hint: { ja: "Controlキーを押しながら V を押します。", en: "Hold Control and press V." },
+              mobileOptions: [{k: "Ctrl + V", c: true}, {k: "Ctrl + C", c: false}, {k: "Ctrl + P", c: false}, {k: "Alt + V", c: false}]
             },
             { id: "b3", diff: "beginner", type: "simulation", 
               scenario: { ja: "長い規約文をすべて消して書き直したいです。", en: "Want to select the entire long text to rewrite." },
               instruction: { ja: "テキストを「すべて選択」してください。", en: "Select all text." },
-              targetKeys: ["CTRL", "A"], hint: { ja: "Controlキーを押しながら A を押します。", en: "Hold Control and press A." }
+              targetKeys: ["CTRL", "A"], hint: { ja: "Controlキーを押しながら A を押します。", en: "Hold Control and press A." },
+              mobileOptions: [{k: "Ctrl + A", c: true}, {k: "Ctrl + S", c: false}, {k: "Alt + A", c: false}, {k: "Shift + A", c: false}]
             },
             { id: "b4", diff: "beginner", type: "simulation", 
               scenario: { ja: "あ！間違えて大切な文章を消してしまいました。", en: "Oops! Accidentally deleted important text." },
               instruction: { ja: "操作を「元に戻して」ください。", en: "Undo the last action." },
-              targetKeys: ["CTRL", "Z"], hint: { ja: "Controlキーを押しながら Z を押します。", en: "Hold Control and press Z." }
+              targetKeys: ["CTRL", "Z"], hint: { ja: "Controlキーを押しながら Z を押します。", en: "Hold Control and press Z." },
+              mobileOptions: [{k: "Ctrl + Z", c: true}, {k: "Ctrl + Y", c: false}, {k: "Ctrl + X", c: false}, {k: "Alt + Z", c: false}]
             },
             { id: "b5", diff: "beginner", type: "simulation", 
               scenario: { ja: "この文は下の段落に移動させる必要があります。", en: "This sentence needs to be moved down." },
               instruction: { ja: "テキストを「切り取り」してください。", en: "Cut the text." },
-              targetKeys: ["CTRL", "X"], hint: { ja: "Controlキーを押しながら X を押します。", en: "Hold Control and press X." }
+              targetKeys: ["CTRL", "X"], hint: { ja: "Controlキーを押しながら X を押します。", en: "Hold Control and press X." },
+              mobileOptions: [{k: "Ctrl + X", c: true}, {k: "Ctrl + C", c: false}, {k: "Alt + X", c: false}, {k: "Shift + X", c: false}]
             },
             { id: "b6", diff: "beginner", type: "choice", 
               scenario: { ja: "ブラウザで調べ物をしながら、別の調べ物もしたいです。", en: "Want to search something else while keeping this page open." },
@@ -643,12 +676,14 @@
             { id: "i4", diff: "intermediate", type: "simulation", 
               scenario: { ja: "「Hotel」という単語を一気に選択したいです。", en: "Want to select the word 'Hotel' at once." },
               instruction: { ja: "カーソル位置から「右に1単語分選択」してください。", en: "Select one word to the right." },
-              targetKeys: ["CTRL", "SHIFT", "ARROWRIGHT"], hint: { ja: "Ctrl(単語ジャンプ) + Shift(選択) + 右矢印", en: "Ctrl(Jump) + Shift(Select) + Right Arrow" }
+              targetKeys: ["CTRL", "SHIFT", "ARROWRIGHT"], hint: { ja: "Ctrl(単語ジャンプ) + Shift(選択) + 右矢印", en: "Ctrl(Jump) + Shift(Select) + Right Arrow" },
+              mobileOptions: [{k: "Ctrl + Shift + →", c: true}, {k: "Ctrl + →", c: false}, {k: "Shift + →", c: false}, {k: "Alt + Shift + →", c: false}]
             },
             { id: "i5", diff: "intermediate", type: "simulation", 
               scenario: { ja: "文章を編集中。行の最後に追記したいです。", en: "Editing text. Want to add at the end of the line." },
               instruction: { ja: "カーソルを「行の末尾」へジャンプさせてください。", en: "Jump cursor to End of line." },
-              targetKeys: ["END"], hint: { ja: "Endキー単体を推します。", en: "Press the End key." }
+              targetKeys: ["END"], hint: { ja: "Endキー単体を推します。", en: "Press the End key." },
+              mobileOptions: [{k: "End", c: true}, {k: "Home", c: false}, {k: "Ctrl + End", c: false}, {k: "Shift + End", c: false}]
             },
             { id: "i6", diff: "intermediate", type: "choice", 
               scenario: { ja: "デスクトップにあるファイルを開きたいですが、画面がウィンドウでいっぱいです。", en: "Need to open a file on desktop, but too many windows." },
@@ -672,7 +707,8 @@
             { id: "i9", diff: "intermediate", type: "simulation", 
               scenario: { ja: "Ctrl+Zで戻しすぎました！先ほどの状態にもう一度進めたいです。", en: "Undid too much! Want to redo." },
               instruction: { ja: "操作を「やり直し（Redo）」してください。", en: "Redo the action." },
-              targetKeys: ["CTRL", "Y"], hint: { ja: "Ctrl+Zの逆は、Ctrl+Yです。", en: "Opposite of Ctrl+Z is Ctrl+Y." }
+              targetKeys: ["CTRL", "Y"], hint: { ja: "Ctrl+Zの逆は、Ctrl+Yです。", en: "Opposite of Ctrl+Z is Ctrl+Y." },
+              mobileOptions: [{k: "Ctrl + Y", c: true}, {k: "Ctrl + Z", c: false}, {k: "Alt + Y", c: false}, {k: "Shift + Y", c: false}]
             },
             { id: "i10", diff: "intermediate", type: "choice", 
               scenario: { ja: "少し席を外してフロントへ向かいます。PCを他人に操作されないようにしたいです。", en: "Stepping away. Need to lock PC." },
@@ -703,7 +739,8 @@
             { id: "e4", diff: "expert", type: "simulation", 
               scenario: { ja: "タイプミスしました。一文字ずつではなく、単語ごと一気に消したいです。", en: "Typo. Want to delete the whole word at once." },
               instruction: { ja: "カーソルの「左側の1単語を削除」してください。", en: "Delete one word to the left." },
-              targetKeys: ["CTRL", "BACKSPACE"], hint: { ja: "Ctrlを押しながらBackspaceです。", en: "Ctrl + Backspace." }
+              targetKeys: ["CTRL", "BACKSPACE"], hint: { ja: "Ctrlを押しながらBackspaceです。", en: "Ctrl + Backspace." },
+              mobileOptions: [{k: "Ctrl + Backspace", c: true}, {k: "Shift + Backspace", c: false}, {k: "Alt + Backspace", c: false}, {k: "Backspace", c: false}]
             },
             { id: "e5", diff: "expert", type: "choice", 
               scenario: { ja: "画面に表示されたエラーメッセージの【一部分だけ】を切り取って画像保存したいです。", en: "Want to screenshot only a specific part of the screen." },
@@ -726,7 +763,8 @@
             { id: "e8", diff: "expert", type: "simulation", 
               scenario: { ja: "数百行あるマニュアルの一番下にいます。一気に一番上に戻りたいです。", en: "At bottom of long manual. Want to go to top instantly." },
               instruction: { ja: "カーソルを「文書の先頭」へジャンプさせてください。", en: "Jump to beginning of document." },
-              targetKeys: ["CTRL", "HOME"], hint: { ja: "Ctrl + Homeキーです。", en: "Ctrl + Home." }
+              targetKeys: ["CTRL", "HOME"], hint: { ja: "Ctrl + Homeキーです。", en: "Ctrl + Home." },
+              mobileOptions: [{k: "Ctrl + Home", c: true}, {k: "Home", c: false}, {k: "Shift + Home", c: false}, {k: "Alt + Home", c: false}]
             },
             { id: "e9", diff: "expert", type: "choice", 
               scenario: { ja: "マウスが壊れました！アプリの上の「ファイル(F)」などのメニューを開きたいです。", en: "Mouse broken! Want to access top menu (File, Edit, etc)." },
@@ -747,6 +785,7 @@
 
         function init() {
             loadState();
+            detectDeviceMode();
             applyLanguage();
             checkDailyLogin();
             updateStatsUI();
@@ -758,6 +797,30 @@
 
             // Event Listeners for simulation
             document.addEventListener('keydown', handleSimulationInput);
+        }
+
+        function detectDeviceMode() {
+            if (state.deviceMode === 'auto') {
+                const isTouch = ('ontouchstart' in window) || (navigator.maxTouchPoints > 0) || (navigator.msMaxTouchPoints > 0);
+                state.deviceMode = isTouch ? 'mobile' : 'pc';
+            }
+            updateModeUI();
+        }
+
+        function toggleDeviceMode() {
+            state.deviceMode = state.deviceMode === 'pc' ? 'mobile' : 'pc';
+            saveState();
+            updateModeUI();
+            
+            // If currently playing a quiz, re-render it
+            if(document.getElementById('view-quiz').classList.contains('active') && currentQuiz) {
+                renderQuizUI();
+            }
+        }
+
+        function updateModeUI() {
+            document.getElementById('mode-pc').className = state.deviceMode === 'pc' ? 'active' : '';
+            document.getElementById('mode-mobile').className = state.deviceMode === 'mobile' ? 'active' : '';
         }
 
         function t(key, nestedKey = null) {
@@ -915,11 +978,25 @@
             document.getElementById('quiz-feedback').className = 'feedback';
             document.getElementById('quiz-feedback').innerText = '';
 
-            if (currentQuiz.type === 'choice') {
+            // Handle Simulation as Choice if in Mobile Mode
+            let renderType = currentQuiz.type;
+            if (renderType === 'simulation' && state.deviceMode === 'mobile') {
+                renderType = 'choice'; // Override for mobile
+                
+                const msg = document.createElement('p');
+                msg.style.color = 'var(--primary-color)';
+                msg.style.fontWeight = 'bold';
+                msg.style.marginBottom = '1rem';
+                msg.innerText = t('mobileModeMsg');
+                area.appendChild(msg);
+            }
+
+            if (renderType === 'choice') {
                 const grid = document.createElement('div');
                 grid.className = 'options-grid';
                 // Shuffle options
-                const opts = [...currentQuiz.options].sort(() => 0.5 - Math.random());
+                const sourceOptions = currentQuiz.type === 'simulation' ? currentQuiz.mobileOptions : currentQuiz.options;
+                const opts = [...sourceOptions].sort(() => 0.5 - Math.random());
                 opts.forEach(opt => {
                     const btn = document.createElement('button');
                     btn.className = 'option-btn';
@@ -929,21 +1006,7 @@
                 });
                 area.appendChild(grid);
             } 
-            else if (currentQuiz.type === 'sequence') {
-                sessionSequence = [];
-                const container = document.createElement('div');
-                
-                const slotsArea = document.createElement('div');
-                slotsArea.className = 'sequence-slots';
-                slotsArea.id = 'seq-slots';
-                for(let i=0; i<currentQuiz.correctSeq.length; i++) {
-                    const slot = document.createElement('div');
-                    slot.className = 'slot';
-                    slotsArea.appendChild(slot);
-                }
-                container.appendChild(slotsArea);
-
-                const controls = document.createElement('div');
+            else if (renderType === 'sequence') {
                 controls.style.textAlign = 'center';
                 controls.style.marginBottom = '1rem';
                 controls.innerHTML = `
